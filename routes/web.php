@@ -22,11 +22,12 @@ use Illuminate\Support\Facades\Auth;
 Route::middleware(['auth.shopify'])->group(function () {
 
     Route::get('/', 'ShopifyTriggerController@index')->name('home');
-    Route::get('trigger/createview', 'ShopifyTriggerController@createview')->name('triggers.createview');
-    Route::post('/triggers/edit', 'ShopifyTriggerController@edit')->name('triggers.edit');
-    Route::post('/triggers', 'ShopifyTriggerController@store')->name('triggers.store');
-    Route::delete('/triggers/{id}', 'ShopifyTriggerController@destroy')->name('triggers.destroy');
-    Route::put('/triggers/{id}', 'ShopifyTriggerController@update')->name('triggers.update');
+    Route::get('trigger/createview', 'ShopifyTriggerController@createview')->name('trigger.createview');
+    Route::get('trigger/edit/{id}', 'ShopifyTriggerController@edit')->name('trigger.edit');
+    Route::post('/trigger/save', 'ShopifyTriggerController@store')->name('trigger.store');
+    Route::delete('trigger/delete/{id}', 'ShopifyTriggerController@destroy')->name('trigger.destroy');
+    Route::put('/trigger/update/{id}', 'ShopifyTriggerController@update')->name('trigger.update');
+  
 
     Route::post('handwrytten/login', 'HandwryttenApiController@login')->name('handwrytten.login');
     Route::get('handwrytten/edit/{id}', 'HandwryttenApiController@edit')->name('handwrytten.edit');

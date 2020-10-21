@@ -32,19 +32,20 @@
                             <tr>
 
                                 <th scope="row"></th>
-                                <td>{{ $handwrytten->fullname }}</td>
+                                <td>{{ $handwrytten->name }}</td>
                                 <td>{{ $handwrytten->email }}</td>
                                 <td> @if($handwrytten->status == 1)
                                     Active
-
+                                    @else
+                                    Inactive
                                     @endif </td>
 
 
                                 <td>
                                     <a class="" href="handwrytten/edit/{{$handwrytten->id}}">
-                                   
-                                            <button type="submit" class="btn btn-link ml-4 mt-1"> <i class="fa fa-edit fa-2x text-primary"></i> </button>
-                                       
+
+                                        <button type="submit" class="btn btn-link ml-4 mt-1"> <i class="fa fa-edit fa-2x text-primary"></i> </button>
+
                                     </a>
                                     <div class="d-inline-block">
                                         <form action="{{ route('handwrytten.destroy', $handwrytten->id) }}" method="POST">
@@ -89,23 +90,34 @@
                         <thead>
                             <tr>
                                 <th scope="col">#</th>
+                                <th scope="col">Card</th>
                                 <th scope="col">Trigger Name</th>
-
+                                <th scope="col">Status</th>
                                 <th scope="col">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
+                        <?php $number = 0; ?>
                             @foreach($triggers as $trigger)
+                            <?php $number++ ?>   
                             <tr>
-                                <th scope="row"></th>
-
+                                <th scope="row">{{$number}}</th>
+                                <th scope="row"> <img src="{{ $trigger->trigger_card }}" class="cardImg" alt="Card Image" width="150" height="150" style="object-fit: contain;"></th>
                                 <td>{{ $trigger->trigger_name }}</td>
+                                <td> @if($trigger->trigger_status == 1)
+                                    Active
+                                    @else
+                                    Inactive
+                                    @endif </td>
                                 <td>
-                                    <button type="button" class="btn btn-danger shadow">
-                                        edit
-                                    </button>
+
+                                    <a class="" href="trigger/edit/{{$trigger->id}}">
+
+                                        <button type="submit" class="btn btn-link ml-4 mt-1"> <i class="fa fa-edit fa-2x text-primary"></i> </button>
+
+                                    </a>
                                     <div class="d-inline-block">
-                                        <form action="{{ route('triggers.destroy', $trigger->id) }}" method="POST">
+                                        <form action="{{ route('trigger.destroy', $trigger->id) }}" method="POST">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-link ml-4 mt-1" id="destroyTrigger" onclick="deleteTrigger()"> <i class="fa fa-trash-o fa-2x text-danger"></i> </button>
@@ -114,6 +126,7 @@
 
                                 </td>
                             </tr>
+                           
                             @endforeach
                         </tbody>
                     </table>

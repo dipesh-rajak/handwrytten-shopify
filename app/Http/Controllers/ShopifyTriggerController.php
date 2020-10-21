@@ -34,24 +34,13 @@ class ShopifyTriggerController extends Controller
     public function createview()
     {
         
-        $triggers = ShopifyTrigger::where('user_id', Auth::id())->latest()->get();
+    
         $handwrytten = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->first();
 
-        if(is_null($handwrytten)){
-        // return view('handwrytten-app.login');
-        return back()->with('Please setup oat least one active account of a Handwrytten');
-        } else{
-          $responseStyle = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/fonts/list');
-            $responseInsert = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/inserts/list');
-            $responseGiftCard = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/giftCards/list');
-            $responseCategory = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/categories/list');
-            $singlesteporder = Http::withToken($handwrytten->token)->post('https://api.handwrytten.com/v1/orders/singleStepOrder');   
-            $style = json_decode($responseStyle);
-            $insertData = json_decode($responseInsert);
-            $giftCard = json_decode($responseGiftCard);
-            $category = json_decode($responseCategory);
-         
-   return view('triggers', compact('triggers', 'handwrytten', 'style', 'insertData', 'giftCard', 'category'));
+        if(is_null($handwrytten)){       
+        return back()->with('error','Please setup oat least one active account of a Handwrytten');
+        } else{ 
+             return view('triggers');
         }
         // dd($triggers);
         
@@ -80,7 +69,9 @@ class ShopifyTriggerController extends Controller
         $addTrigger->user_id = Auth::id();
         $addTrigger->trigger_name = $request->trigger_name;
 
-        $addTrigger->save();
+           $addTrigger->save();
+      
+       
         if($request->trigger_name == "First Order Placed"){
             $shop = Auth::user();
             $address = env('APP_URL')."api/shopifyOrders";    
@@ -95,6 +86,10 @@ class ShopifyTriggerController extends Controller
                 'format' => $format
                 ]
             ]);  
+
+
+
+
             $orders_create_webhook2= $shop->api()->rest('get', '/admin/api/2020-10/webhooks.json')['body']['webhooks'][0]->id;
            
             $addWebhook = new ShopifyWebhook();
@@ -103,11 +98,24 @@ class ShopifyTriggerController extends Controller
             $addWebhook->webhook_address = $address;
             $addWebhook->webhook_formate = $format;
             $addWebhook->webhook_id = $orders_create_webhook2;
-            $addWebhook->save();
-             
+            $addWebhook->save();             
        
         }
-        return back()->with('success', 'Trigger and webhook has been added');
+        $trigger = ShopifyTrigger::latest()->first();
+        $handwrytten = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->first();
+        $responseStyle = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/fonts/list');
+        $responseInsert = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/inserts/list');
+        $responseGiftCard = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/giftCards/list');
+        $responseCategory = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/categories/list');
+        $singlesteporder = Http::withToken($handwrytten->token)->post('https://api.handwrytten.com/v1/orders/singleStepOrder');   
+        $style = json_decode($responseStyle);
+        $insertData = json_decode($responseInsert);
+        $giftCard = json_decode($responseGiftCard);
+        $category = json_decode($responseCategory);
+     
+
+       // return view('triggers', compact('trigger','handwrytten', 'style', 'insertData', 'giftCard', 'category'));
+        return view('triggers', compact('trigger','handwrytten', 'style', 'insertData', 'giftCard', 'category'));
 
 
     }
@@ -129,9 +137,20 @@ class ShopifyTriggerController extends Controller
      * @param  \App\ShopifyTrigger  $shopifyTrigger
      * @return \Illuminate\Http\Response
      */
-    public function edit(ShopifyTrigger $shopifyTrigger)
+    public function edit($id)
     {
-        //
+        $trigger = ShopifyTrigger::where('id', '=',$id)->first();
+        $handwrytten = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->first();
+        $responseStyle = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/fonts/list');
+        $responseInsert = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/inserts/list');
+        $responseGiftCard = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/giftCards/list');
+        $responseCategory = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/categories/list');
+        $singlesteporder = Http::withToken($handwrytten->token)->post('https://api.handwrytten.com/v1/orders/singleStepOrder');   
+        $style = json_decode($responseStyle);
+        $insertData = json_decode($responseInsert);
+        $giftCard = json_decode($responseGiftCard);
+        $category = json_decode($responseCategory);
+        return view('triggers-edit', compact('trigger','handwrytten', 'style', 'insertData', 'giftCard', 'category'));
     }
 
     /**
@@ -143,18 +162,21 @@ class ShopifyTriggerController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // dd($request->all());
+    // dd($request->all());
         $formData = $request->validate([
             'trigger_card' => '',
             'trigger_message' => 'required|string',
             'trigger_signoff' => 'required|string',
             'trigger_handwriting_style' => 'required|string',
+            'trigger_insert' => 'string',
+            'trigger_gift_card' => 'string',
             'trigger_status' => 'string'
+          
         ]);
 
         $formData['user_id'] = Auth::id();
 
-        
+        $formData['card_id'] = $request->card_id;
 
         if($request->trigger_card){
 
@@ -170,8 +192,10 @@ class ShopifyTriggerController extends Controller
         $triggers = ShopifyTrigger::where('user_id', Auth::id())->latest()->get();
         $handwryttens = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->get();     
        
-      
-         return view('admin', compact('triggers', 'handwryttens'))->with('success','Trigger has been Saved');
+         
+       
+     
+         return redirect()->route('home')->with('success','Trigger  Saved');
        
     }
 

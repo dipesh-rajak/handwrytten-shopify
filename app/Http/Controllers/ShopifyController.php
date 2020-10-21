@@ -23,50 +23,25 @@ class ShopifyController extends Controller
 
   public function getorder(Request $request)
   {
+
+
     $count = DB::table('shopifyorders')->count();
-
-
     if ($count < 1) {
-
       $webhookdetails = DB::table('shopifywebhook')->where('webhook_topic', 'orders/create')->first();
-
-      $userid =  $webhookdetails->user_id;
-
-      $orderid =  $request->id;
-      $ordernumber =  $request->number;
-      $email =  $request->email;
-      $order_status_url =  $request->order_status_url;
-      $product_id =   $request['line_items'][0]['product_id'];
-      $title =  $request['line_items'][0]['title'];
-      $quantity =  $request['line_items'][0]['quantity'];
-      $amount =   $request['total_line_items_price_set']['shop_money']['amount'];
-      $currency_code =   $request['total_line_items_price_set']['shop_money']['currency_code'];
-      $vendor =  $request['line_items'][0]['vendor'];
-      $recipient_name = $request['shipping_address']['name'];
-      $recipient_business_name = $request['shipping_address']['company'];
-      $recipient_address1  = $request['shipping_address']['address1'];
-      $recipient_address2  = $request['shipping_address']['address2'];
-      $recipient_city = $request['shipping_address']['city'];
-      $recipient_zip = $request['shipping_address']['zip'];
-      $recipient_country = $request['shipping_address']['country'];
+      $userid = $webhookdetails->user_id;
       $add0rder = new ShopifyOrder();
-      $add0rder->user_id = $userid;
-      $add0rder->order_id = $orderid;
-      $add0rder->order_number = $ordernumber;
-      $add0rder->email = $email;
-      $add0rder->order_status_url = $order_status_url;
-      $add0rder->product_id = $product_id;
-      $add0rder->title = $title;
-      $add0rder->quantity = $quantity;
-      $add0rder->amount = $amount;
-      $add0rder->currency_code = $currency_code;
-      $add0rder->vendor = $vendor;
-      $add0rder->recipient_name = $recipient_name;
-      $add0rder->recipient_business_name = $recipient_business_name;
-      $add0rder->recipient_address1 = $recipient_address1;
-      $add0rder->recipient_city = $recipient_city;
-      $add0rder->recipient_zip = $recipient_zip;
-      $add0rder->recipient_country = $recipient_country;
+      $add0rder->user_id = $webhookdetails->user_id;
+      $add0rder->order_id =  $request->id;;
+      $add0rder->order_number = $request->number;
+      $add0rder->email = $request->email;
+      $add0rder->order_status_url = $request->order_status_url;
+      $add0rder->product_id = $request['line_items'][0]['product_id'];
+      $add0rder->title = $request['line_items'][0]['title'];
+      $add0rder->quantity = $request['line_items'][0]['quantity'];
+      $add0rder->amount = $request['total_line_items_price_set']['shop_money']['amount'];
+      $add0rder->currency_code =  $request['total_line_items_price_set']['shop_money']['currency_code'];
+      $add0rder->vendor = $request['line_items'][0]['vendor'];
+
       $add0rder->save();
 
       $user_details = DB::table('handwrytten_apis')->where([
@@ -74,31 +49,61 @@ class ShopifyController extends Controller
       ])->first();
       $useremail = $user_details->email;
       $pass = $user_details->password;
+      $uid = $user_details->uid;
+
+      // $curl = curl_init();
+      // curl_setopt_array($curl, array(
+      //   CURLOPT_URL => "https://api.handwrytten.com/v1/auth/authorization",
+      //   CURLOPT_RETURNTRANSFER => true,
+      //   CURLOPT_ENCODING => "",
+      //   CURLOPT_MAXREDIRS => 10,
+      //   CURLOPT_TIMEOUT => 0,
+      //   CURLOPT_FOLLOWLOCATION => true,
+      //   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+      //   CURLOPT_CUSTOMREQUEST => "POST",
+      //   CURLOPT_POSTFIELDS => array('login' => $useremail, 'password' => $pass),
+      //   CURLOPT_HTTPHEADER => array(
+      //     "Accept: application/json",
+      //   ),
+      // ));
+
+      // $response = curl_exec($curl);
+      // $data = json_decode($response);
+
+      // $fullname = $data->fullname;
+      // $uidtt = $data->uid;
+
+
+
 
       $curl = curl_init();
+
       curl_setopt_array($curl, array(
-        CURLOPT_URL => "https://api.handwrytten.com/v1/auth/authorization",
+        CURLOPT_URL => "https://api.handwrytten.com/v1/creditCards/list",
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => "",
         CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 0,
-        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_TIMEOUT => 30,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => array('login' => $useremail, 'password' => $pass),
+        CURLOPT_POSTFIELDS => "{\"uid\":\"$uid\"}",
         CURLOPT_HTTPHEADER => array(
           "Accept: application/json",
         ),
       ));
 
-      $response = curl_exec($curl);
-      $data = json_decode($response);
+      $response_cred = curl_exec($curl);
+      $data_cred = json_decode($response_cred);
+      $err = curl_error($curl);
+      //   $credcardid = $data_cred->credit_cards[0]['id'];
+      $credcardid = "";
+      curl_close($curl);
 
-      $fullname = $data->fullname;
-      $uidtt = $data->uid;
+
+
 
       $ordersget = DB::table('shopifyorders')->where([
-        ['order_number', '=', '1'],
+        //   ['order_number', '=', '1'],
         ['user_id', '=', $userid],
       ])->first();
 
@@ -112,7 +117,7 @@ class ShopifyController extends Controller
         ['trigger_name', '=', 'First Order Placed'],
         ['user_id', '=', $userid],
       ])->first();
-
+      $fetch_card_id = $triggerget->card_id;
       $fetch_trigger_message = $triggerget->trigger_message;
       $fetch_trigger_signoff = $triggerget->trigger_signoff;
       $fetch_trigger_handwriting_style = $triggerget->trigger_handwriting_style;
@@ -134,7 +139,8 @@ class ShopifyController extends Controller
         CURLOPT_TIMEOUT => 30,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => "{\r\n\"uid\":\"$uidtt\",\r\n\"card_id\":\"101\",\r\n\"denomination_id\":\"2\",\r\n\"message\":\"$fetch_trigger_message\",\r\n\"font_label\":\"$fetch_trigger_handwriting_style\",\r\n\"sender_name\":\"$usernameus\",\r\n\"sender_business_name\":\"123456\",\r\n\"sender_address1\":\"2112 Manchester\",\r\n\"sender_address2\":\"\",\r\n\"sender_city\":\"Los Angeles\",\r\n\"sender_state\":\"CA\",\r\n\"sender_zip\":\"91111\",\r\n\"sender_country\":\"USA\",\r\n\"recipient_name\":\"$fetch_recipient_name\",\r\n\"recipient_business_name\":\"$fetch_recipient_business_name\",\r\n\"recipient_address1\":\"$fetch_recipient_address1\",\r\n\"recipient_city\":\"$fetch_recipient_city \",\r\n\"recipient_zip\":\"$fetch_recipient_zip\",\r\n\"recipient_country\":\"$fetch_recipient_country\",\r\n\"insert_id\":\"$fetch_trigger_insert\",\r\n\"credit_card_id\":\"\"\r\n}",
+        CURLOPT_POSTFIELDS => "{\r\n\"uid\":\"$uid\",\r\n\"card_id\":\"$fetch_card_id\",\r\n\"denomination_id\":\"2\",\r\n\"message\":\"$fetch_trigger_message\",\r\n\"font_label\":\"$fetch_trigger_handwriting_style\",\r\n\"sender_name\":\"Randy Rose\",\r\n\"sender_business_name\":\"123456\",\r\n\"sender_address1\":\"2112 Manchester\",\r\n\"sender_address2\":\"\",\r\n\"sender_city\":\"Los Angeles\",\r\n\"sender_state\":\"CA\",\r\n\"sender_zip\":\"91111\",\r\n\"sender_country\":\"USA\",\r\n\"recipient_name\":\"Josh Davis\",\r\n\"recipient_business_name\":\"Express Logistics and Transport\",\r\n\"recipient_address1\":\"621 SW 5th Avenue Suite 400\",\r\n\"recipient_address2\":\"\",\r\n\"recipient_city\":\"Portland\",\r\n\"recipient_state\":\"OR\",\r\n\"recipient_zip\":\"85123\",\r\n\"recipient_country\":\"USA\",\r\n\"insert_id\":\"\",\r\n\"credit_card_id\":\"$credcardid\"\r\n}",
+        // CURLOPT_POSTFIELDS => "{\r\n\"uid\":\"$uid\",\r\n\"card_id\":\"$fetch_card_id\",\r\n\"denomination_id\":\"2\",\r\n\"message\":\"$fetch_trigger_message\",\r\n\"font_label\":\"$fetch_trigger_handwriting_style\",\r\n\"sender_name\":\"$usernameus\",\r\n\"sender_business_name\":\"123456\",\r\n\"sender_address1\":\"2112 Manchester\",\r\n\"sender_address2\":\"\",\r\n\"sender_city\":\"Los Angeles\",\r\n\"sender_state\":\"CA\",\r\n\"sender_zip\":\"91111\",\r\n\"sender_country\":\"USA\",\r\n\"recipient_name\":\"$fetch_recipient_name\",\r\n\"recipient_business_name\":\"$fetch_recipient_business_name\",\r\n\"recipient_address1\":\"$fetch_recipient_address1\",\r\n\"recipient_city\":\"$fetch_recipient_city \",\r\n\"recipient_zip\":\"$fetch_recipient_zip\",\r\n\"recipient_country\":\"$fetch_recipient_country\",\r\n\"insert_id\":\"$fetch_trigger_insert\",\r\n\"credit_card_id\":\"\"\r\n}",
         CURLOPT_HTTPHEADER => array(
           "cache-control: no-cache",
           "content-type: application/json",
@@ -144,7 +150,7 @@ class ShopifyController extends Controller
 
       $responseyt = curl_exec($curl);
       Log::info($responseyt);
-      $err = curl_error($curl);     
+      $err = curl_error($curl);
       curl_close($curl);
     }
   }

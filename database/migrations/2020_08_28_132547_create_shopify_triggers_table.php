@@ -23,6 +23,7 @@ class CreateShopifyTriggersTable extends Migration
             $table->string('trigger_handwriting_style')->nullable();
             $table->string('trigger_insert')->nullable();
             $table->string('trigger_gift_card')->nullable();
+            $table->string('card_id')->nullable();
             $table->string('trigger_status')->default();
             $table->timestamps();
         });

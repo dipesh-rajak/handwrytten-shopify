@@ -47,6 +47,7 @@ class HandwryttenApiController extends Controller
 
         curl_close($curl);
         $data = json_decode($response);
+       
 
         if($data->httpCode == '200'){
           $hashedpas=  Hash::make($request->password);
@@ -187,7 +188,7 @@ class HandwryttenApiController extends Controller
         $handwryttens = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->get();     
        
      
-         return redirect()->route('home')->with('success','Trigger has been Saved');
+         return redirect()->route('home')->with('success','Record  Saved');
        
     }
 

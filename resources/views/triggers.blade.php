@@ -19,27 +19,20 @@
 
 
 
-                    @foreach($triggers as $trigger)
-
+                   @if(!empty($trigger))
                     <div class="card">
                         <div class="card-header bg-white">
                             <div class="float-left">
                                 <p class="font-weight-bold">{{ $trigger->trigger_name }}</p>
                             </div>
                             <div class="float-right">
-                                <div class="d-inline-block">
-                                    <form action="{{ route('triggers.destroy', $trigger->id) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-link ml-4 mt-1" id="destroyTrigger" onclick="deleteTrigger()"> <i class="fa fa-trash-o fa-2x text-danger"></i> </button>
-                                    </form>
-                                </div>
-                                <form action="{{ route('triggers.update', $trigger->id) }}" method="POST" enctype="multipart/form-data" class="d-inline-block float-left">
+                               
+                                <form action="{{ route('trigger.update', $trigger->id) }}" method="POST" enctype="multipart/form-data" class="d-inline-block float-left">
                                     @csrf
                                     @method('PUT')
                                     <div class="mt-3">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" name="trigger_status" class="custom-control-input" id="trigger_status" value="{{ $trigger->trigger_status}}" onclick="triggeerStatus()">
+                                            <input type="checkbox" name="trigger_status" class="custom-control-input" id="trigger_status" value="1" onclick="triggeerStatus()">
                                             <label class="custom-control-label" for="trigger_status" id="triggerStatus">Disabled</label>
                                         </div>
                                     </div>
@@ -50,18 +43,11 @@
                                 <div class="col-4">
                                     <div class="form-group row">
                                         <label for="trigger_card" class="col-sm-3 col-form-label">Card:</label>
-                                        <div class="col-sm-9">
-                                            @if($trigger->trigger_card == null)
-                                            <img src="{{ asset('img/download.png') }}" class="cardImg" alt="Card Image" width="150" height="150" style="object-fit: contain;">
-                                            @else
-                                            <img src="{{ $trigger->trigger_card }}" class="cardImg" alt="Card Image" width="150" height="150" style="object-fit: contain;">
-                                            @endif
+                                        <div class="col-sm-9">                                        
+                                            <img src="{{ asset('img/download.png') }}" class="cardImg" alt="Card Image" width="150" height="150" style="object-fit: contain;">                                           
                                             <div class="text-center ml-5">
-                                                <input type="hidden" name="trigger_card" value="" class="cardInputFile">
-                                                <input type="hidden" name="old_trigger_card" value="{{ $trigger->trigger_card }}" class="cardInputFile">
-                                                {{-- <label for="files" class="text-primary" style="text-decoration:underline;cursor: pointer;">Change</label>
-                                                    <input type="file"name="trigger_card" id="files" style="visibility:hidden;">
-                                                    <input type="hidden"name="old_trigger_card" value="{{ $trigger->trigger_card}}"> --}}
+                                                <input type="hidden" name="trigger_card" value="" class="cardInputFile">                                            
+                                                <input type="hidden"name="card_id" value="{{ $trigger->card_id}}" class="cardId">
                                                 <button type="button" class="btn btn-link" data-toggle="modal" data-target="#triggerCard">
                                                     Change
                                                 </button>
@@ -111,13 +97,13 @@
                                     <div class="form-group row">
                                         <label for="trigger_message" class="col-sm-4 col-form-label">Message:</label>
                                         <div class="col-sm-8 pl-0">
-                                            <textarea name="trigger_message" class="form-control" id="trigger_message" cols="24" rows="4" placeholder="Enter a message">{{ old('trigger_message') ?? $trigger->trigger_message }}</textarea>
+                                            <textarea name="trigger_message" class="form-control" id="trigger_message" cols="24" rows="4" placeholder="Enter a message"></textarea>
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <label for="trigger_signoff" class="col-sm-4 col-form-label">Sign Off:</label>
                                         <div class="col-sm-8">
-                                            <textarea name="trigger_signoff" class="float-right mr-3 form-control" id="trigger_signoff" cols="15" rows="3" placeholder="Enter a message">{{ old('trigger_signoff') ?? $trigger->trigger_signoff }}</textarea>
+                                            <textarea name="trigger_signoff" class="float-right mr-3 form-control" id="trigger_signoff" cols="15" rows="3" placeholder="Enter a message"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -128,7 +114,7 @@
                                             <select class="custom-select" name="trigger_handwriting_style" id="trigger_handwriting_style">
                                                 <option value="">Please Select</option>
                                                 @foreach($style->fonts as $data)
-                                                <option value="{{  $data->label }}" @if($data->label == $trigger->trigger_handwriting_style) selected @endif>{{ $data->label}}</option>
+                                                <option value="{{  $data->label }}">{{ $data->label}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -139,9 +125,9 @@
                                         <div class="col-sm-5">
                                             <select class="custom-select" name="trigger_insert" id="trigger_insert">
                                                 <option value="">Please Select</option>
-                                                <option value="Sticker" @if($trigger->trigger_insert == 'Sticker') selected @endif>Sticker</option>
+                                                <option value="Sticker">Sticker</option>
                                                 @foreach($insertData->inserts as $data)
-                                                <option value="{{ $data->name }}" @if($data->name == $trigger->trigger_insert) selected @endif>{{ $data->name}}</option>
+                                                <option value="{{ $data->name }}">{{ $data->name}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -153,7 +139,7 @@
                                             <select class="custom-select" name="trigger_gift_card" id="trigger_gift_card">
                                                 <option value="">Please Select</option>
                                                 @foreach($giftCard->gcards as $data)
-                                                <option value="{{ $data->name }}" @if($data->name == $trigger->trigger_gift_card) selected @endif>{{ $data->name}}</option>
+                                                <option value="{{ $data->name }}">{{ $data->name}}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -168,14 +154,16 @@
                         </div>
                         </form>
                     </div>
-
-                    @endforeach
+                   
+                 @endif
+               
                 </div>
                 <!-- Modal -->
                 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
                     <div class="modal-dialog">
-                        <form action="{{ route('triggers.store') }}" method="POST">
+                        <form action="{{ route('trigger.store') }}" method="POST">
                             @csrf
+                            @method('POST')
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="exampleModalLabel">Add A Trigger</h5>
@@ -298,8 +286,11 @@
 <script>
     function cardFormClick() {
         var Cardvalue = $('input[name=cardlist]:checked').val();
-        $('.cardImg').attr('src',Cardvalue);
-   $(".cardInputFile").val(Cardvalue);
+        var id = $('input[name=cardlist]:checked').attr("id");
+       var cardid= id.slice(9);        
+        $('.cardId').val(cardid);
+        $('.cardImg').attr('src', Cardvalue);
+        $(".cardInputFile").val(Cardvalue);
     }
 </script>
 @endsection
