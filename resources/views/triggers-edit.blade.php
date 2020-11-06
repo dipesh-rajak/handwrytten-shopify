@@ -8,14 +8,14 @@
 
                 <div class="card-body">
                     @include('msg')
-                  
+                    <form action="{{ route('trigger.update', $trigger->id) }}" method="POST" enctype="multipart/form-data" class="d-inline-block float-left" style="width:100%">
+                                
                     @csrf
                     @method('PUT')
                         <div class="card">
                             <div class="card-header bg-white">
                                 <div class="float-left">
-                                <form action="{{ route('trigger.update', $trigger->id) }}" method="POST" enctype="multipart/form-data" class="d-inline-block float-left">
-                                    <p class="font-weight-bold">{{ $trigger->trigger_name }}</p>
+                                  <p class="font-weight-bold">{{ $trigger->trigger_name }}</p>
                                 </div>
                                 <div class="float-right">
 
@@ -24,8 +24,8 @@
 
                                     <div class="mt-3">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" name="trigger_status" class="custom-control-input" id="trigger_status" value="{{ $trigger->trigger_status}}" onclick="triggeerStatus()">
-                                            <label class="custom-control-label" for="trigger_status" id="triggerStatus">Disabled</label>
+                                            <input type="checkbox" name="trigger_status" class="custom-control-input" id="trigger_status" value="{{ $trigger->trigger_status}}"  @if($trigger->trigger_status == 1) checked @endif onclick="triggeerStatus()">
+                                            <label class="custom-control-label" for="trigger_status" id="triggerStatus"> @if($trigger->trigger_status == 1) Enable @else Disable @endif</label>
                                         </div>
                                     </div>
                                 </div>
@@ -177,14 +177,15 @@
 </script>
 
 <script>
+    
     function triggeerStatus() {
         var newStatus = document.getElementById("trigger_status").value;
         if (newStatus == '1') {
-            document.getElementById("trigger_status").value = '1';
-            document.getElementById("triggerStatus").innerHTML = "Enabled";
-        } else {
             document.getElementById("trigger_status").value = '0';
             document.getElementById("triggerStatus").innerHTML = "Disabled";
+        } else {
+            document.getElementById("trigger_status").value = '1';
+            document.getElementById("triggerStatus").innerHTML = "Enabled";
         }
     }
 </script>
@@ -209,10 +210,9 @@
 
 <script>
     function categoryFun() {
-        // var newStatus = document.getElementById("category_id").value;
+       
         var categoryID = $("#category_id :selected").val();
-        // alert(categoryID);
-        // alert(newStatus);
+        
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

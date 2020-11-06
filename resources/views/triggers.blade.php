@@ -32,7 +32,7 @@
                                     @method('PUT')
                                     <div class="mt-3">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" name="trigger_status" class="custom-control-input" id="trigger_status" value="1" onclick="triggeerStatus()">
+                                            <input type="checkbox" name="trigger_status" class="custom-control-input" id="trigger_status" value="0"  onclick="triggeerStatus()">
                                             <label class="custom-control-label" for="trigger_status" id="triggerStatus">Disabled</label>
                                         </div>
                                     </div>
@@ -221,14 +221,14 @@
 </script>
 
 <script>
-    function triggeerStatus() {
+ function triggeerStatus() {
         var newStatus = document.getElementById("trigger_status").value;
         if (newStatus == '1') {
             document.getElementById("trigger_status").value = '0';
-            document.getElementById("triggerStatus").innerHTML = "Enabled";
+            document.getElementById("triggerStatus").innerHTML = "Disabled";
         } else {
             document.getElementById("trigger_status").value = '1';
-            document.getElementById("triggerStatus").innerHTML = "Disabled";
+            document.getElementById("triggerStatus").innerHTML = "Enabled";
         }
     }
 </script>

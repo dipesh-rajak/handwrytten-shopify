@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\DB;
 
 class Kernel extends ConsoleKernel
 {
@@ -13,7 +14,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        Commands\DemoCron::class,
     ];
 
     /**
@@ -24,7 +25,20 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $orders = DB::table('shopifycustomer')->get();
+        foreach ($orders as $order) {
+            $first_name =$order->first_name;
+            $cus_id =$order->customer_id;
+            $do_noteb =$order->dob;
+            $dob =trim($do_noteb,"dob: ");
+            $days_ago = date('Y-m-d', strtotime('-5 days', strtotime(' $dob')));        
+            $day =      substr( $days_ago, -2);
+            $month =               substr( $days_ago, 5,-3);
+            $schedule->command('demo:cron',[$first_name,$cus_id])
+            ->everyMinute();
+            // $schedule->command('demo:cron',[$first_name,$cus_id])
+          //  ->yearly(   $day,  $month, '00:00');
+            }      
     }
 
     /**

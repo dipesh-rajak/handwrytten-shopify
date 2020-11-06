@@ -118,6 +118,7 @@
         </p>
 
         <form method="POST" action="{{ route('authenticate') }}">
+            @csrf
             {{ csrf_field() }}
             <input id="shop" name="shop" type="text" autofocus="autofocus" placeholder="example.myshopify.com" class="marketing-input">
             <button type="submit" class="marketing-button">Install</button>

@@ -23,34 +23,34 @@ class ShopifyTriggerController extends Controller
      */
     public function index(Request $request)
     {
-         $triggers = ShopifyTrigger::where('user_id', Auth::id())->latest()->get();
-         $handwryttens = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->get();     
-        
-          return view('admin', compact('triggers', 'handwryttens'));
-  
+        $triggers = ShopifyTrigger::where('user_id', Auth::id())->latest()->get();
+        $handwryttens = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->get();
+
+        return view('admin', compact('triggers', 'handwryttens'));
+
         // dd($triggers);
-        
+
     }
     public function createview()
     {
-        
-    
+
+
         $handwrytten = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->first();
 
-        if(is_null($handwrytten)){       
-        return back()->with('error','Please setup oat least one active account of a Handwrytten');
-        } else{ 
-             return view('triggers');
+        if (is_null($handwrytten)) {
+            return back()->with('error', 'Please setup oat least one active account of a Handwrytten');
+        } else {
+            return view('triggers');
         }
         // dd($triggers);
-        
+
     }
     /**
      * Show the form for creating a new resource.
      *
      * @return \Illuminate\Http\Response
      */
-  
+
 
     /**
      * Store a newly created resource in storage.
@@ -60,46 +60,77 @@ class ShopifyTriggerController extends Controller
      */
     public function store(Request $request)
     {
+    //     $shop = Auth::user();
+    //  $shop->api()->rest('delete', '/admin/api/2020-10/webhooks/953170428062.json');
+    //    $allwebhook = $shop->api()->rest('get', '/admin/api/2019-10/webhooks.json');
+    //     return  $allwebhook;
         $formData = $request->validate([
             // 'trigger_name' => 'required|unique:shopify_triggers,user_id,'. Auth::id(),
-            'trigger_name'      => 'required|string|unique:shopify_triggers,trigger_name,NULL,id,user_id,'.Auth::id(),
+            'trigger_name'      => 'required|string|unique:shopify_triggers,trigger_name,NULL,id,user_id,' . Auth::id(),
         ]);
 
         $addTrigger = new ShopifyTrigger();
         $addTrigger->user_id = Auth::id();
         $addTrigger->trigger_name = $request->trigger_name;
 
-           $addTrigger->save();
-      
-       
-        if($request->trigger_name == "First Order Placed"){
+        $addTrigger->save();
+
+
+        if ($request->trigger_name == "First Order Placed") {
+            
             $shop = Auth::user();
-            $address = env('APP_URL')."api/shopifyOrders";    
+            $address = env('APP_URL') . "api/shopifyOrders";
             $topic = 'orders/create';
             $format = 'json';
             $api_version = '2020-10';
-            
-            $orders_create_webhook= $shop->api()->rest('post', '/admin/api/2020-10/webhooks.json',
-            ['webhook' => 
-                ['topic' => $topic,
-                'address' =>  $address,
-                'format' => $format
-                ]
-            ]);  
 
 
+             
 
+            $orders_create_webhook = $shop->api()->rest(
+                'post',
+                '/admin/api/2020-10/webhooks.json',
+                ['webhook' =>
+                [
+                    'topic' => $topic,
+                    'address' =>  $address,
+                    'format' => $format
+                ]]
+            );
+             $addWebhook = new ShopifyWebhook();
+            $addWebhook->user_id = Auth::id();
+            $addWebhook->webhook_topic = $topic;
+            $addWebhook->webhook_address = $address;
+            $addWebhook->webhook_formate = $format;
+            $addWebhook->webhook_id = $orders_create_webhook['body']['webhook']['id'];
+            $addWebhook->save();
+        }elseif($request->trigger_name == "New Registration"){
+       
+            $shop = Auth::user();
+            $address = env('APP_URL') . "api/shopifyCustomerCreate";
+            $topic = 'customers/create';
+            $format = 'json';
+            $api_version = '2020-10';
 
-            $orders_create_webhook2= $shop->api()->rest('get', '/admin/api/2020-10/webhooks.json')['body']['webhooks'][0]->id;
-           
+            $orders_create_webhook = $shop->api()->rest(
+                'post',
+                '/admin/api/2020-10/webhooks.json',
+                ['webhook' =>
+                [
+                    'topic' => $topic,
+                    'address' =>  $address,
+                    'format' => $format
+                ]]
+            );
+     
+       
             $addWebhook = new ShopifyWebhook();
             $addWebhook->user_id = Auth::id();
             $addWebhook->webhook_topic = $topic;
             $addWebhook->webhook_address = $address;
             $addWebhook->webhook_formate = $format;
-            $addWebhook->webhook_id = $orders_create_webhook2;
-            $addWebhook->save();             
-       
+            $addWebhook->webhook_id = $orders_create_webhook['body']['webhook']['id'];
+            $addWebhook->save();
         }
         $trigger = ShopifyTrigger::latest()->first();
         $handwrytten = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->first();
@@ -107,17 +138,15 @@ class ShopifyTriggerController extends Controller
         $responseInsert = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/inserts/list');
         $responseGiftCard = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/giftCards/list');
         $responseCategory = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/categories/list');
-        $singlesteporder = Http::withToken($handwrytten->token)->post('https://api.handwrytten.com/v1/orders/singleStepOrder');   
+        $singlesteporder = Http::withToken($handwrytten->token)->post('https://api.handwrytten.com/v1/orders/singleStepOrder');
         $style = json_decode($responseStyle);
         $insertData = json_decode($responseInsert);
         $giftCard = json_decode($responseGiftCard);
         $category = json_decode($responseCategory);
-     
-
-       // return view('triggers', compact('trigger','handwrytten', 'style', 'insertData', 'giftCard', 'category'));
-        return view('triggers', compact('trigger','handwrytten', 'style', 'insertData', 'giftCard', 'category'));
 
 
+        // return view('triggers', compact('trigger','handwrytten', 'style', 'insertData', 'giftCard', 'category'));
+        return view('triggers', compact('trigger', 'handwrytten', 'style', 'insertData', 'giftCard', 'category'));
     }
 
     /**
@@ -139,18 +168,18 @@ class ShopifyTriggerController extends Controller
      */
     public function edit($id)
     {
-        $trigger = ShopifyTrigger::where('id', '=',$id)->first();
+        $trigger = ShopifyTrigger::where('id', '=', $id)->first();
         $handwrytten = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->first();
         $responseStyle = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/fonts/list');
         $responseInsert = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/inserts/list');
         $responseGiftCard = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/giftCards/list');
         $responseCategory = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/categories/list');
-        $singlesteporder = Http::withToken($handwrytten->token)->post('https://api.handwrytten.com/v1/orders/singleStepOrder');   
+        $singlesteporder = Http::withToken($handwrytten->token)->post('https://api.handwrytten.com/v1/orders/singleStepOrder');
         $style = json_decode($responseStyle);
         $insertData = json_decode($responseInsert);
         $giftCard = json_decode($responseGiftCard);
         $category = json_decode($responseCategory);
-        return view('triggers-edit', compact('trigger','handwrytten', 'style', 'insertData', 'giftCard', 'category'));
+        return view('triggers-edit', compact('trigger', 'handwrytten', 'style', 'insertData', 'giftCard', 'category'));
     }
 
     /**
@@ -162,41 +191,40 @@ class ShopifyTriggerController extends Controller
      */
     public function update(Request $request, $id)
     {
-    // dd($request->all());
+        // dd($request->all());
         $formData = $request->validate([
             'trigger_card' => '',
             'trigger_message' => 'required|string',
             'trigger_signoff' => 'required|string',
-            'trigger_handwriting_style' => 'required|string',
-            'trigger_insert' => 'string',
-            'trigger_gift_card' => 'string',
-            'trigger_status' => 'string'
-          
+            'trigger_handwriting_style' => 'required|string'
+         
         ]);
 
         $formData['user_id'] = Auth::id();
-
+        $enabled = '';
+        if (empty($request->trigger_status)) {
+            $enabled =  '0';
+        } else {
+            $enabled =  $request->trigger_status;
+        }
+        $formData['trigger_status'] = $enabled;
         $formData['card_id'] = $request->card_id;
 
-        if($request->trigger_card){
+        if ($request->trigger_card) {
 
             $formData['trigger_card'] = $request->trigger_card;
-
-        } else{
+        } else {
 
             $formData['trigger_card'] = $request->old_trigger_card;
         }
+        $formData['trigger_insert'] = $request->trigger_insert;
+        $formData['trigger_gift_card'] = $request->trigger_gift_card;
+        
 
-
-        ShopifyTrigger::whereId($id)->update($formData);     
+        ShopifyTrigger::whereId($id)->update($formData);
         $triggers = ShopifyTrigger::where('user_id', Auth::id())->latest()->get();
-        $handwryttens = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->get();     
-       
-         
-       
-     
-         return redirect()->route('home')->with('success','Trigger  Saved');
-       
+        $handwryttens = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->get();
+        return redirect()->route('home')->with('success', 'Trigger  Saved');
     }
 
     /**
@@ -209,22 +237,45 @@ class ShopifyTriggerController extends Controller
     {
 
         $userid =  Auth::id();
-        $trigger = DB::table('shopify_triggers')->where('id', $id)->delete();
-        $webhookdetails= DB::table('shopifywebhook')->where('webhook_topic','orders/create')->first();
-
-     
-        $webhook_details= DB::table('shopifywebhook')->where([   
-            ['user_id', '=', $userid],
-            ['webhook_topic', '=', 'orders/create']
-        ])->first();
-        $deleteid =   $webhook_details->webhook_id;
-        $shop = Auth::user();
-        $orders_create_webhook2= $shop->api()->rest('delete', '/admin/api/2020-10/webhooks/'.$deleteid.'.json');
-        
-        $trigger = DB::table('shopifywebhook')->where([   
-            ['user_id', '=', $userid],
-            ['webhook_topic', '=', 'orders/create']
-        ])->delete();
-        return back()->with('delete', 'Trigger has been deleted');
+         $trigger = DB::table('shopify_triggers')->where('id','=', $id)->first();
+       
+          $shop = Auth::user();
+          if($trigger->trigger_name == 'First Order Placed'){
+             $webhook_details = DB::table('shopifywebhook')->where([
+                  ['user_id', '=', $userid],
+                  ['webhook_topic', '=', 'orders/create']
+              ])->first();
+              $deleteid =   $webhook_details->webhook_id;            
+              $shop->api()->rest('delete', '/admin/api/2020-10/webhooks/' . $deleteid . '.json');
+             DB::table('shopifywebhook')->where([
+                  ['user_id', '=', $userid],
+                  ['webhook_topic', '=', 'orders/create']
+              ])->delete();
+  
+          }elseif($trigger->trigger_name =='New Registration'){
+              $webhook_details = DB::table('shopifywebhook')->where([
+                  ['user_id', '=', $userid],
+                  ['webhook_topic', '=', 'customers/create']
+              ])->first();
+              $deleteid =   $webhook_details->webhook_id;            
+              $shop->api()->rest('delete', '/admin/api/2020-10/webhooks/' . $deleteid . '.json');
+              DB::table('shopifywebhook')->where([
+                  ['user_id', '=', $userid],
+                  ['webhook_topic', '=', 'customers/create']
+              ])->delete();
+  
+          }elseif($trigger->trigger_name =='$ Purchase Threshold (Single Order)'){
+  
+          }elseif($trigger->trigger_name =='Lifetime # Of Order Purchase Threshold'){
+  
+          }elseif($trigger->trigger_name =='Birthday'){
+  
+          }elseif($trigger->trigger_name =='Anniversary Of Purchase'){
+  
+          }elseif($trigger->trigger_name =='Specific Item Purchased'){
+  
+          }
+      DB::table('shopify_triggers')->where('id', $id)->delete();
+       return back()->with('delete', 'Trigger has been deleted');
     }
 }
