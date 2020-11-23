@@ -9,22 +9,22 @@
                 <div class="card-body">
                     @include('msg')
                     <form action="{{ route('trigger.update', $trigger->id) }}" method="POST" enctype="multipart/form-data" class="d-inline-block float-left" style="width:100%">
-                                
-                    @csrf
-                    @method('PUT')
+
+                        @csrf
+                        @method('PUT')
                         <div class="card">
                             <div class="card-header bg-white">
                                 <div class="float-left">
-                                  <p class="font-weight-bold">{{ $trigger->trigger_name }}</p>
+                                    <p class="font-weight-bold">{{ $trigger->trigger_name }}</p>
                                 </div>
                                 <div class="float-right">
 
 
-                                  
+
 
                                     <div class="mt-3">
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" name="trigger_status" class="custom-control-input" id="trigger_status" value="{{ $trigger->trigger_status}}"  @if($trigger->trigger_status == 1) checked @endif onclick="triggeerStatus()">
+                                            <input type="checkbox" name="trigger_status" class="custom-control-input" id="trigger_status" value="{{ $trigger->trigger_status}}" @if($trigger->trigger_status == 1) checked @endif onclick="triggeerStatus()">
                                             <label class="custom-control-label" for="trigger_status" id="triggerStatus"> @if($trigger->trigger_status == 1) Enable @else Disable @endif</label>
                                         </div>
                                     </div>
@@ -32,27 +32,29 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
+
+
+
                                     <div class="col-4">
                                         <div class="form-group row">
-                                            <label for="trigger_card" class="col-sm-3 col-form-label">Card:</label>
-                                            <div class="col-sm-9">
+
+                                            <div class="col-sm-12">
+                                                <label for="trigger_card" class="col-form-label">Card:</label>
                                                 @if($trigger->trigger_card == null)
                                                 <img src="{{ asset('img/download.png') }}" class="cardImg" alt="Card Image" width="150" height="150" style="object-fit: contain;">
                                                 @else
                                                 <img src="{{ $trigger->trigger_card }}" class="cardImg" alt="Card Image" width="150" height="150" style="object-fit: contain;">
                                                 @endif
                                                 <div class="text-center ml-5">
-                                                <input type="hidden"name="card_id" value="{{ $trigger->card_id}}" class="cardId">
+                                                    <input type="hidden" name="card_id" value="{{ $trigger->card_id}}" class="cardId">
                                                     <input type="hidden" name="trigger_card" value="" class="cardInputFile">
                                                     <input type="hidden" name="old_trigger_card" value="{{ $trigger->trigger_card }}" class="cardInputFile">
                                                     {{-- <label for="files" class="text-primary" style="text-decoration:underline;cursor: pointer;">Change</label>
                                                     <input type="file"name="trigger_card" id="files" style="visibility:hidden;">
                                                     <input type="hidden"name="old_trigger_card" value="{{ $trigger->trigger_card}}"> --}}
-                                                    <button type="button" class="btn btn-link" data-toggle="modal" data-target="#triggerCard">
-                                                        Change
-                                                    </button>
+
                                                     <!-- Modal -->
-                                                    <div class="modal-dialog modal-dialog-scrollable">
+                                                    <!-- <div class="modal-dialog modal-dialog-scrollable">
                                                         <div class="modal fade" id="triggerCard" tabindex="-1" aria-labelledby="triggerCardLabel" aria-hidden="true">
                                                             <div class="modal-dialog">
                                                                 <div class="modal-content">
@@ -87,12 +89,58 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    </div> -->
 
                                                 </div>
                                             </div>
+                                            <div class="col-md-12">
+                                                <p class="modal-title font-weight-bold" id="triggerCardLabel" style="    font-size: 11px;">Select a Category from the dropdownlist to browse cards</p>
+                                                <select class="custom-select" name="category" id="category_id" onchange="categoryFun()">
+                                                    <option value="" selected>Please Select</option>
+                                                    @foreach($category->categories as $data)
+                                                    <option value="{{ $data->id}}">{{ $data->name}}</option>
+                                                    @endforeach
+                                                </select>
+                                                <div id="overlay">
+                                                    <div class="cv-spinner">
+                                                        <span class="spinner"></span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="modal-dialog modal-dialog-scrollable">
+                                                    <div class="modal fade" id="triggerCard" tabindex="-1" aria-labelledby="triggerCardLabel" aria-hidden="true">
+                                                        <div class="modal-dialog">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="triggerCardLabel">Select Card</h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body pb-5">
+                                                                    <div class="container pb-5">
+
+                                                                        <div id="cardInfo" class="container-fluid mt-5">
+
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Save Changes</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
+
+
+
+
                                     <div class="col-4">
                                         <div class="form-group row">
                                             <label for="trigger_message" class="col-sm-4 col-form-label">Message:</label>
@@ -150,8 +198,8 @@
 
                             </div>
                             <div class="form-group">
-                            <button type="submit" class="btn btn-primary float-right" id="updateTriggerID" onclick="updateTrigger()">Save</button>
-                        </div>
+                                <button type="submit" class="btn btn-primary float-right" id="updateTriggerID" onclick="updateTrigger()">Save</button>
+                            </div>
                     </form>
                 </div>
             </div>
@@ -177,7 +225,6 @@
 </script>
 
 <script>
-    
     function triggeerStatus() {
         var newStatus = document.getElementById("trigger_status").value;
         if (newStatus == '1') {
@@ -210,9 +257,9 @@
 
 <script>
     function categoryFun() {
-       
+
         var categoryID = $("#category_id :selected").val();
-        
+
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -220,6 +267,8 @@
         });
         $("#cardInfo").empty();
         $("#overlay").fadeIn(300);
+
+
         $.ajax({
             type: 'POST',
             url: "{{ route('ajaxRequest.post') }}",
@@ -227,6 +276,7 @@
                 id: categoryID
             },
             success: function(data) {
+                jQuery("#triggerCard").modal('show');
                 var newres = JSON.parse(data);
                 console.log(newres.cards);
                 var cardinfo = newres.cards;
@@ -243,8 +293,8 @@
     function cardFormClick() {
         var Cardvalue = $('input[name=cardlist]:checked').val();
         var id = $('input[name=cardlist]:checked').attr("id");
-       var cardid= id.slice(9);        
-       $('.cardId').val(cardid);
+        var cardid = id.slice(9);
+        $('.cardId').val(cardid);
         $('.cardImg').attr('src', Cardvalue);
         $(".cardInputFile").val(Cardvalue);
     }

@@ -16,12 +16,12 @@ class CreateShopifyordersTable extends Migration
         Schema::create('shopifyorders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('order_id');
-            $table->integer('order_number');
+            $table->string('order_id')->nullable();;
+            $table->integer('order_number')->nullable();
             $table->string('email')->nullable();
             $table->string('order_status_url')->nullable();
             $table->string('product_id')->nullable();
-            $table->string('title');
+            $table->string('title')->nullable();;
             $table->string('quantity')->nullable();
             $table->string('amount')->nullable();
             $table->string('currency_code')->nullable();
@@ -31,9 +31,7 @@ class CreateShopifyordersTable extends Migration
             $table->string('recipient_address1')->nullable();
             $table->string('recipient_city')->nullable();
             $table->string('recipient_zip')->nullable();
-             $table->string('recipient_country')->nullable();             
-
-
+             $table->string('recipient_country')->nullable();            
             $table->timestamps();
         });
     }

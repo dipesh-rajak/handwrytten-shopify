@@ -34,13 +34,32 @@ class ShopifyTriggerController extends Controller
     public function createview()
     {
 
-
+     // $shop = Auth::user();   
+       //  $allwebhook = $shop->api()->rest('get', '/admin/api/2020-10/webhooks.json');
+     //   $cusromers = $shop->api()->rest('delete', '/admin/api/2020-10/customers/4211512311966.json');
+     
+        // $cusromerszz = $shop->api()->rest('get', '/admin/api/2020-10/customers.json');
+     //return  $allwebhook;
         $handwrytten = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->first();
 
         if (is_null($handwrytten)) {
             return back()->with('error', 'Please setup oat least one active account of a Handwrytten');
         } else {
-            return view('triggers');
+            $trigger = ShopifyTrigger::latest()->first();
+            $handwrytten = DB::table('handwrytten_apis')->where('user_id', '=', Auth::id())->first();
+            $responseStyle = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/fonts/list');
+            $responseInsert = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/inserts/list');
+            $responseGiftCard = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/giftCards/list');
+            $responseCategory = Http::withToken($handwrytten->token)->get('https://api.handwrytten.com/v1/categories/list');
+            $singlesteporder = Http::withToken($handwrytten->token)->post('https://api.handwrytten.com/v1/orders/singleStepOrder');
+            $style = json_decode($responseStyle);
+            $insertData = json_decode($responseInsert);
+            $giftCard = json_decode($responseGiftCard);
+            $category = json_decode($responseCategory);
+
+
+            // return view('triggers', compact('trigger','handwrytten', 'style', 'insertData', 'giftCard', 'category'));
+            return view('triggers', compact('trigger', 'handwrytten', 'style', 'insertData', 'giftCard', 'category'));
         }
         // dd($triggers);
 
@@ -60,32 +79,50 @@ class ShopifyTriggerController extends Controller
      */
     public function store(Request $request)
     {
-    //     $shop = Auth::user();
-    //  $shop->api()->rest('delete', '/admin/api/2020-10/webhooks/953170428062.json');
-    //    $allwebhook = $shop->api()->rest('get', '/admin/api/2019-10/webhooks.json');
-    //     return  $allwebhook;
+        //       $shop = Auth::user();   
+        //   // $allwebhook = $shop->api()->rest('get', '/admin/api/2020-10/webhooks.json');
+        //   $cusromers = $shop->api()->rest('get', '/admin/api/2020-10/customers.json');
+        //     return  $cusromers;
+
         $formData = $request->validate([
             // 'trigger_name' => 'required|unique:shopify_triggers,user_id,'. Auth::id(),
             'trigger_name'      => 'required|string|unique:shopify_triggers,trigger_name,NULL,id,user_id,' . Auth::id(),
+            'trigger_card' => 'required',
+            'trigger_message' => 'required|string',
+            'trigger_signoff' => 'required|string',
+            'trigger_handwriting_style' => 'required|string'
         ]);
 
         $addTrigger = new ShopifyTrigger();
         $addTrigger->user_id = Auth::id();
         $addTrigger->trigger_name = $request->trigger_name;
+        $enabled = '';
+        if (empty($request->trigger_status)) {
+            $enabled =  '0';
+        } else {
+            $enabled =  $request->trigger_status;
+        }
+        $addTrigger->trigger_status = $enabled;
+        $addTrigger->card_id   = $request->card_id;
+        $addTrigger->trigger_card = $request->trigger_card;   
+        $addTrigger->trigger_message = $request->trigger_message;     
+        $addTrigger->trigger_signoff = $request->trigger_signoff;   
+        $addTrigger->trigger_message = $request->trigger_message;     
+        $addTrigger->trigger_handwriting_style = $request->trigger_handwriting_style;
+        $addTrigger->trigger_insert = $request->trigger_insert;
+        $addTrigger->trigger_gift_card = $request->trigger_gift_card;
 
-        $addTrigger->save();
+        $addTrigger->save();      
+
 
 
         if ($request->trigger_name == "First Order Placed") {
-            
+
             $shop = Auth::user();
             $address = env('APP_URL') . "api/shopifyOrders";
             $topic = 'orders/create';
             $format = 'json';
             $api_version = '2020-10';
-
-
-             
 
             $orders_create_webhook = $shop->api()->rest(
                 'post',
@@ -97,15 +134,15 @@ class ShopifyTriggerController extends Controller
                     'format' => $format
                 ]]
             );
-             $addWebhook = new ShopifyWebhook();
+            $addWebhook = new ShopifyWebhook();
             $addWebhook->user_id = Auth::id();
             $addWebhook->webhook_topic = $topic;
             $addWebhook->webhook_address = $address;
             $addWebhook->webhook_formate = $format;
             $addWebhook->webhook_id = $orders_create_webhook['body']['webhook']['id'];
             $addWebhook->save();
-        }elseif($request->trigger_name == "New Registration"){
-       
+        } elseif ($request->trigger_name == "New Registration") {
+
             $shop = Auth::user();
             $address = env('APP_URL') . "api/shopifyCustomerCreate";
             $topic = 'customers/create';
@@ -122,8 +159,8 @@ class ShopifyTriggerController extends Controller
                     'format' => $format
                 ]]
             );
-     
-       
+
+
             $addWebhook = new ShopifyWebhook();
             $addWebhook->user_id = Auth::id();
             $addWebhook->webhook_topic = $topic;
@@ -146,7 +183,7 @@ class ShopifyTriggerController extends Controller
 
 
         // return view('triggers', compact('trigger','handwrytten', 'style', 'insertData', 'giftCard', 'category'));
-        return view('triggers', compact('trigger', 'handwrytten', 'style', 'insertData', 'giftCard', 'category'));
+        return redirect()->route('home')->with('success', 'Trigger  Saved');
     }
 
     /**
@@ -197,7 +234,7 @@ class ShopifyTriggerController extends Controller
             'trigger_message' => 'required|string',
             'trigger_signoff' => 'required|string',
             'trigger_handwriting_style' => 'required|string'
-         
+
         ]);
 
         $formData['user_id'] = Auth::id();
@@ -219,7 +256,7 @@ class ShopifyTriggerController extends Controller
         }
         $formData['trigger_insert'] = $request->trigger_insert;
         $formData['trigger_gift_card'] = $request->trigger_gift_card;
-        
+
 
         ShopifyTrigger::whereId($id)->update($formData);
         $triggers = ShopifyTrigger::where('user_id', Auth::id())->latest()->get();
@@ -237,45 +274,38 @@ class ShopifyTriggerController extends Controller
     {
 
         $userid =  Auth::id();
-         $trigger = DB::table('shopify_triggers')->where('id','=', $id)->first();
-       
-          $shop = Auth::user();
-          if($trigger->trigger_name == 'First Order Placed'){
-             $webhook_details = DB::table('shopifywebhook')->where([
-                  ['user_id', '=', $userid],
-                  ['webhook_topic', '=', 'orders/create']
-              ])->first();
-              $deleteid =   $webhook_details->webhook_id;            
-              $shop->api()->rest('delete', '/admin/api/2020-10/webhooks/' . $deleteid . '.json');
-             DB::table('shopifywebhook')->where([
-                  ['user_id', '=', $userid],
-                  ['webhook_topic', '=', 'orders/create']
-              ])->delete();
-  
-          }elseif($trigger->trigger_name =='New Registration'){
-              $webhook_details = DB::table('shopifywebhook')->where([
-                  ['user_id', '=', $userid],
-                  ['webhook_topic', '=', 'customers/create']
-              ])->first();
-              $deleteid =   $webhook_details->webhook_id;            
-              $shop->api()->rest('delete', '/admin/api/2020-10/webhooks/' . $deleteid . '.json');
-              DB::table('shopifywebhook')->where([
-                  ['user_id', '=', $userid],
-                  ['webhook_topic', '=', 'customers/create']
-              ])->delete();
-  
-          }elseif($trigger->trigger_name =='$ Purchase Threshold (Single Order)'){
-  
-          }elseif($trigger->trigger_name =='Lifetime # Of Order Purchase Threshold'){
-  
-          }elseif($trigger->trigger_name =='Birthday'){
-  
-          }elseif($trigger->trigger_name =='Anniversary Of Purchase'){
-  
-          }elseif($trigger->trigger_name =='Specific Item Purchased'){
-  
-          }
-      DB::table('shopify_triggers')->where('id', $id)->delete();
-       return back()->with('delete', 'Trigger has been deleted');
+        $trigger = DB::table('shopify_triggers')->where('id', '=', $id)->first();
+
+        $shop = Auth::user();
+        if ($trigger->trigger_name == 'First Order Placed') {
+            $webhook_details = DB::table('shopifywebhook')->where([
+                ['user_id', '=', $userid],
+                ['webhook_topic', '=', 'orders/create']
+            ])->first();
+            $deleteid =   $webhook_details->webhook_id;
+            $shop->api()->rest('delete', '/admin/api/2020-10/webhooks/' . $deleteid . '.json');
+            DB::table('shopifywebhook')->where([
+                ['user_id', '=', $userid],
+                ['webhook_topic', '=', 'orders/create']
+            ])->delete();
+        } elseif ($trigger->trigger_name == 'New Registration') {
+            $webhook_details = DB::table('shopifywebhook')->where([
+                ['user_id', '=', $userid],
+                ['webhook_topic', '=', 'customers/create']
+            ])->first();
+            $deleteid =   $webhook_details->webhook_id;
+            $shop->api()->rest('delete', '/admin/api/2020-10/webhooks/' . $deleteid . '.json');
+            DB::table('shopifywebhook')->where([
+                ['user_id', '=', $userid],
+                ['webhook_topic', '=', 'customers/create']
+            ])->delete();
+        } elseif ($trigger->trigger_name == '$ Purchase Threshold (Single Order)') {
+        } elseif ($trigger->trigger_name == 'Lifetime # Of Order Purchase Threshold') {
+        } elseif ($trigger->trigger_name == 'Birthday') {
+        } elseif ($trigger->trigger_name == 'Anniversary Of Purchase') {
+        } elseif ($trigger->trigger_name == 'Specific Item Purchased') {
+        }
+        DB::table('shopify_triggers')->where('id', $id)->delete();
+        return back()->with('delete', 'Trigger has been deleted');
     }
 }

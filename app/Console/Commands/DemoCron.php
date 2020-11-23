@@ -68,13 +68,7 @@ class DemoCron extends Command
               $dob =trim($do_noteb,"dob: ");
         $day =      substr( $dob, -2);
         $month =               substr( $dob, 5,-3);
-            
-        //   \Log::info( $cus_get->first_name);
-        //   \Log::info( $cus_get->last_name);
-        //   \Log::info( $cus_get->customer_id);
-        //   \Log::info( $cus_get->dob);
-        //   \Log::info( $day);
-        //   \Log::info( $month);
+      
 
         /*
            Write your database logic we bellow:

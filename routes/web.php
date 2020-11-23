@@ -42,5 +42,6 @@ Route::middleware(['auth.shopify'])->group(function () {
    // Route::get('shopify', 'ShopifyController@index')->name('get.records');
    
    Route::get('handwrytten/view', 'HandwryttenApiController@view')->name('handwrytten.view');
-});
 
+
+});

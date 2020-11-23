@@ -52,28 +52,7 @@ class ShopifyController extends Controller
       $pass = $user_details->password;
       $uid = $user_details->uid;
 
-      // $curl = curl_init();
-      // curl_setopt_array($curl, array(
-      //   CURLOPT_URL => "https://api.handwrytten.com/v1/auth/authorization",
-      //   CURLOPT_RETURNTRANSFER => true,
-      //   CURLOPT_ENCODING => "",
-      //   CURLOPT_MAXREDIRS => 10,
-      //   CURLOPT_TIMEOUT => 0,
-      //   CURLOPT_FOLLOWLOCATION => true,
-      //   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-      //   CURLOPT_CUSTOMREQUEST => "POST",
-      //   CURLOPT_POSTFIELDS => array('login' => $useremail, 'password' => $pass),
-      //   CURLOPT_HTTPHEADER => array(
-      //     "Accept: application/json",
-      //   ),
-      // ));
-
-      // $response = curl_exec($curl);
-      // $data = json_decode($response);
-
-      // $fullname = $data->fullname;
-      // $uidtt = $data->uid;
-
+   
 
 
 
@@ -143,8 +122,7 @@ class ShopifyController extends Controller
         
         
         CURLOPT_POSTFIELDS => "{\r\n\"uid\":\"$uid\",\r\n\"card_id\":\"$fetch_card_id\",\r\n\"denomination_id\":\"\",\r\n\"message\":\"$fetch_trigger_message\",\r\n\"font_label\":\"$fetch_trigger_handwriting_style\",\r\n\"sender_name\":\"Randy Rose\",\r\n\"sender_business_name\":\"123456\",\r\n\"sender_address1\":\"2112 Manchester\",\r\n\"sender_address2\":\"\",\r\n\"sender_city\":\"Los Angeles\",\r\n\"sender_state\":\"CA\",\r\n\"sender_zip\":\"91111\",\r\n\"sender_country\":\"USA\",\r\n\"recipient_name\":\"Josh Davis\",\r\n\"recipient_business_name\":\"Express Logistics and Transport\",\r\n\"recipient_address1\":\"621 SW 5th Avenue Suite 400\",\r\n\"recipient_address2\":\"\",\r\n\"recipient_city\":\"Portland\",\r\n\"recipient_state\":\"OR\",\r\n\"recipient_zip\":\"85123\",\r\n\"recipient_country\":\"USA\",\r\n\"insert_id\":\"\",\r\n\"credit_card_id\":\"$credcardid\"\r\n}",
-        // CURLOPT_POSTFIELDS => "{\r\n\"uid\":\"$uid\",\r\n\"card_id\":\"$fetch_card_id\",\r\n\"denomination_id\":\"2\",\r\n\"message\":\"$fetch_trigger_message\",\r\n\"font_label\":\"$fetch_trigger_handwriting_style\",\r\n\"sender_name\":\"$usernameus\",\r\n\"sender_business_name\":\"123456\",\r\n\"sender_address1\":\"2112 Manchester\",\r\n\"sender_address2\":\"\",\r\n\"sender_city\":\"Los Angeles\",\r\n\"sender_state\":\"CA\",\r\n\"sender_zip\":\"91111\",\r\n\"sender_country\":\"USA\",\r\n\"recipient_name\":\"$fetch_recipient_name\",\r\n\"recipient_business_name\":\"$fetch_recipient_business_name\",\r\n\"recipient_address1\":\"$fetch_recipient_address1\",\r\n\"recipient_city\":\"$fetch_recipient_city \",\r\n\"recipient_zip\":\"$fetch_recipient_zip\",\r\n\"recipient_country\":\"$fetch_recipient_country\",\r\n\"insert_id\":\"$fetch_trigger_insert\",\r\n\"credit_card_id\":\"\"\r\n}",
-        CURLOPT_HTTPHEADER => array(
+       CURLOPT_HTTPHEADER => array(
           "cache-control: no-cache",
           "content-type: application/json",
           "postman-token: 5100f8af-c0f2-2691-8872-53f00bbd5fb4"
@@ -158,8 +136,7 @@ class ShopifyController extends Controller
   }
   public function createCustomer(Request $request)
   {
-    Log::info($request);
-
+   
      $count = DB::table('shopifycustomer')->count();
     
        $webhookdetails = DB::table('shopifywebhook')->where('webhook_topic', 'customers/create')->first();
