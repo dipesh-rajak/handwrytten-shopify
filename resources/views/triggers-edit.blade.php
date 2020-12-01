@@ -8,6 +8,7 @@
 
                 <div class="card-body">
                     @include('msg')
+                   
                     <form action="{{ route('trigger.update', $trigger->id) }}" method="POST" enctype="multipart/form-data" class="d-inline-block float-left" style="width:100%">
 
                         @csrf
@@ -95,12 +96,13 @@
                                             </div>
                                             <div class="col-md-12">
                                                 <p class="modal-title font-weight-bold" id="triggerCardLabel" style="    font-size: 11px;">Select a Category from the dropdownlist to browse cards</p>
-                                                <select class="custom-select" name="category" id="category_id" onchange="categoryFun()">
+                                                <select class="custom-select" name="trigger_card_category" id="category_id" onchange="categoryFun()">
                                                     <option value="" selected>Please Select</option>
                                                     @foreach($category->categories as $data)
-                                                    <option value="{{ $data->id}}">{{ $data->name}}</option>
+                                                    <option value="{{ $data->id}}"@if($data->id ==  $trigger->trigger_card_category) selected @endif>{{ $data->name}}</option>
                                                     @endforeach
                                                 </select>
+                                               
                                                 <div id="overlay">
                                                     <div class="cv-spinner">
                                                         <span class="spinner"></span>

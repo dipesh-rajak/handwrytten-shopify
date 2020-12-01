@@ -18,9 +18,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/shopifyOrders', 'ShopifyController@getorder');
-Route::post('/shopifyCustomerCreate', 'ShopifyController@createCustomer');
-//Route::post('/shopifyOrders', 'ShopifyController@getorder');
-
-//Route::post('/shopifyOrders', 'ShopifyController@test');
+Route::post('/shopifyOrders', 'ShopifyOrderController@getorder');
+Route::post('/shopifyCustomerCreate', 'ShopifyCustomerController@createCustomer');
+Route::post('/shopifyAppUnistall', 'ShopifyAppUnistallController@appUnistall');
 

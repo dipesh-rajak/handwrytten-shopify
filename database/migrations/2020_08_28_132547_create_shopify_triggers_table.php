@@ -18,6 +18,7 @@ class CreateShopifyTriggersTable extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('trigger_name');
             $table->string('trigger_card')->nullable();
+            $table->string('trigger_card_category')->nullable();
             $table->text('trigger_message')->nullable();
             $table->text('trigger_signoff')->nullable();
             $table->string('trigger_handwriting_style')->nullable();

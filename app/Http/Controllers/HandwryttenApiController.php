@@ -60,7 +60,7 @@ class HandwryttenApiController extends Controller
             $handwrytten->name = $request->name;
             $handwrytten->fullname = $data->fullname;
             $handwrytten->email = $data->email;
-            $handwrytten->password = $hashedpas;
+            $handwrytten->password = $request->password;
             
             $handwrytten->save();
 

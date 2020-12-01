@@ -262,20 +262,20 @@ return [
     | Value is for the endpoint to call
     |
     */
-
     'webhooks' => [
- /*
-        [
-            'topic' => 'orders/create',
-            'address' => 'https://2aea92beb016.ngrok.io/handwritten/webhook/orders-create',
+       [
+            'topic' => env('SHOPIFY_WEBHOOK_1_TOPIC', 'app/uninstalled'),
+            'address' => env('APP_URL') . "api/shopifyAppUnistall",
         ],
-       
-            [
-                'topic' => env('SHOPIFY_WEBHOOK_1_TOPIC', 'orders/create'),
-                'address' => env('SHOPIFY_WEBHOOK_1_ADDRESS', 'https://some-app.com/webhook/orders-create')
-            ],
-            ...
-        */
+        [
+            'topic' => env('SHOPIFY_WEBHOOK_1_TOPIC', 'orders/create'),
+            'address' => env('APP_URL') . "api/shopifyOrders",
+        ],
+        [
+            'topic' => env('SHOPIFY_WEBHOOK_1_TOPIC', 'customers/create'),
+            'address' => env('APP_URL') . "api/shopifyCustomerCreate",
+        ],
+      
     ],
 
     /*
@@ -310,13 +310,13 @@ return [
     */
 
     'after_authenticate_job' => [
-/*
+
         [
-            'job' => '\App\Jobs\AfterAuthorizeJob::class', // example: \App\Jobs\AfterAuthorizeJob::class
+            'job' => \App\Jobs\AfterAuthenticateJob::class, // example: \App\Jobs\AfterAuthorizeJob::class
             'inline' => true // False = dispatch job for later, true = dispatch immediately
         ],
 
-        
+        /*
             [
                 'job' => env('AFTER_AUTHENTICATE_JOB'), // example: \App\Jobs\AfterAuthorizeJob::class
                 'inline' => env('AFTER_AUTHENTICATE_JOB_INLINE', false) // False = dispatch job for later, true = dispatch immediately

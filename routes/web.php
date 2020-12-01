@@ -25,6 +25,7 @@ Route::middleware(['auth.shopify'])->group(function () {
     Route::get('trigger/createview', 'ShopifyTriggerController@createview')->name('trigger.createview');
     Route::get('trigger/edit/{id}', 'ShopifyTriggerController@edit')->name('trigger.edit');
     Route::post('/trigger/save', 'ShopifyTriggerController@store')->name('trigger.store');
+    Route::get('/trigger/existtriggercheck', 'ShopifyTriggerController@existtriggercheck')->name('trigger.existtriggercheck');
     Route::delete('trigger/delete/{id}', 'ShopifyTriggerController@destroy')->name('trigger.destroy');
     Route::put('/trigger/update/{id}', 'ShopifyTriggerController@update')->name('trigger.update');
   

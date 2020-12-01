@@ -80,9 +80,10 @@
 
                     </div>
                     <a class="nav-link" href="{{ url('trigger/createview') }}">
-                        <button type="button" class="btn btn-primary shadow float-right mt-4 mb-4">
+                        <button type="button" class="btn btn-primary shadow float-right mt-4 mb-4"  id="createTriggerID" onclick="createTrigger()">
                             Create Trigger
                         </button>
+                     
                     </a>
 
 
@@ -158,7 +159,11 @@
     var myTitleBar = TitleBar.create(app, titleBarOptions);
 </script>
 
-
+<script>
+    function createTrigger() {
+        document.getElementById("createTriggerID").innerHTML = "<i class='fa fa-spinner fa-spin'></i> Creating Trigger";
+    }
+</script>
 
 
 @endsection
